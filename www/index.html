@@ -867,6 +867,7 @@ button.bcard:focus-visible{outline:3px solid var(--bc);outline-offset:2px}
   <div class="sel"><label for="branchSel">Pobočka</label><select id="branchSel"></select></div>
   <div class="sel"><label for="userSel">Přihlášen jako</label><select id="userSel"></select></div>
   <button type="button" id="themeBtn" class="themebtn" data-act="theme"></button>
+  <button type="button" id="rotBtn" class="themebtn" data-act="rotate" hidden></button>
 </div></div>
 <div class="inner shell">
   <nav class="nav" id="nav" aria-label="Hlavní navigace"></nav>
@@ -2351,10 +2352,20 @@ function openUser(id){
 /* ================= events ================= */
 var hostTheme=document.documentElement.getAttribute('data-theme');
 function themeGet(){try{return localStorage.getItem('vr-theme')||'auto';}catch(e){return 'auto';}}
+var ORI={auto:['⟳','Otáčení: podle tabletu','Automaticky'],landscape:['▭','Otáčení: zamčeno na šířku','Na šířku'],portrait:['▯','Otáčení: zamčeno na výšku','Na výšku']};
+function oriPlug(){try{var C=window.Capacitor;return C&&C.isNativePlatform&&C.isNativePlatform()&&C.Plugins&&C.Plugins.ScreenOrientation||null;}catch(e){return null;}}
+function oriGet(){try{var v=localStorage.getItem('vr-ori');return ORI[v]?v:'auto';}catch(e){return 'auto';}}
+function oriApply(){
+  var b=$('#rotBtn');if(!b)return;var p=oriPlug();
+  if(!p){b.hidden=true;return;}
+  var v=oriGet();b.hidden=false;b.textContent=ORI[v][0];b.title=ORI[v][1];b.setAttribute('aria-label',ORI[v][1]);
+  try{var r=v==='auto'?p.unlock():p.lock({orientation:v});if(r&&r.catch)r.catch(function(){});}catch(e){}
+}
 function themeApply(){
   var v=themeGet(),r=document.documentElement;
   if(v==='auto'){if(hostTheme)r.setAttribute('data-theme',hostTheme);else r.removeAttribute('data-theme');}else r.setAttribute('data-theme',v);
   var b=$('#themeBtn');if(b){b.textContent='◐';b.title='Vzhled a barvy';b.setAttribute('aria-label','Vzhled a barvy');}
+  oriApply();
 }
 var ACCENTS=[
  {id:'blue',n:'Královská modrá',pv:'#3158D6'},
@@ -2388,6 +2399,7 @@ function lsSet(k,v){try{localStorage.setItem(k,v);}catch(e){}}
 themeApply();lookApply();
 var A={
   theme:function(){openAppearance();},
+  rotate:function(){var o=['auto','landscape','portrait'],v=o[(o.indexOf(oriGet())+1)%3];try{localStorage.setItem('vr-ori',v);}catch(e){}oriApply();toast(ORI[v][2]);},
   apTheme:function(d){lsSet('vr-theme',d.v);themeApply();apRender();},
   apAccent:function(d){lsSet('vr-accent',d.v);lookApply();apRender();},
   apHc:function(){lsSet('vr-hc',hcGet()?'0':'1');lookApply();apRender();},
