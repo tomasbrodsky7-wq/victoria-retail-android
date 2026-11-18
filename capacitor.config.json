@@ -1,0 +1,7 @@
+{
+  "appId": "cz.victoriaretail.app",
+  "appName": "Victoria Retail",
+  "webDir": "www",
+  "server": { "androidScheme": "https" },
+  "android": { "allowMixedContent": false }
+}
